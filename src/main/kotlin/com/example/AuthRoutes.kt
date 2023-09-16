@@ -16,13 +16,14 @@ import io.ktor.server.auth.jwt.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
+import org.apache.commons.codec.digest.DigestUtils
 
 fun Route.signUp(
     hashingService: HashingService,
     userDataSource: UserDataSource
 ){
     post("/signup") {
-        val request = call.receiveOrNull<AuthRequest>() ?: kotlin.run {
+        val request = kotlin.runCatching { call.receiveNullable<AuthRequest>() }.getOrNull() ?: kotlin.run {
             call.respond(HttpStatusCode.BadRequest)
             return@post
         }
@@ -41,7 +42,7 @@ fun Route.signUp(
         val user = User(
             userName = request.username,
             email = request.email,
-            password = request.password,
+            password = saltedHash.hash,
             salt = saltedHash.salt
         )
 
@@ -64,13 +65,12 @@ fun Route.signIn(
     tokenConfig: TokenConfig
 ){
     post("/signin") {
-        val request = call.receiveOrNull<AuthRequest>() ?: kotlin.run {
+        val request = kotlin.runCatching { call.receiveNullable<AuthRequest>() }.getOrNull() ?: kotlin.run {
             call.respond(HttpStatusCode.BadRequest)
             return@post
         }
 
         val user = userDataSource.getUserByEmail(request.email)
-        println("user is $user")
         if (user == null){
             call.respond(HttpStatusCode.Conflict, "Incorrect email")
             return@post
@@ -83,7 +83,7 @@ fun Route.signIn(
                 salt = user.salt
             )
         )
-        print(isValidPassword)
+
         if (!isValidPassword){
             call.respond(HttpStatusCode.Conflict, "Incorrect password")
         }
