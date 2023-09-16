@@ -5,6 +5,8 @@ import com.auth0.jwt.algorithms.Algorithm
 import java.util.*
 
 class JwtTokenService: TokenService {
+
+    //Genera un token JWT con las reclamaciones y configuraciones especificadas, guardandolo con una clave secreta.
     override fun generate(config: TokenConfig, vararg claims: TokenClaim): String {
         var token = JWT.create()
             .withAudience(config.audience)
@@ -16,5 +18,4 @@ class JwtTokenService: TokenService {
         }
         return token.sign(Algorithm.HMAC256(config.secret))
     }
-
 }
