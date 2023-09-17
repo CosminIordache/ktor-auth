@@ -4,6 +4,6 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class AuthSingInRequest(
-    val email: String,
+    val identifier: String,
     val password: String
 )

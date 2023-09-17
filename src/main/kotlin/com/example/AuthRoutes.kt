@@ -42,14 +42,23 @@ fun Route.signUp(
             return@post
         }
 
+        //Credentials
         val areFieldsBlank = request.username.isBlank() || request.email.isBlank() || request.password.isBlank()
         val isPwShort = request.password.length < 6
+        val invalidCharactersRegex = """[@!%#()=+\-\\/.,"]""".toRegex()
+        val usernameBadCredentials = invalidCharactersRegex.containsMatchIn(request.username)
         val existingUserByUsername = userDataSource.getUser(request.username)
         val existingUserByEmail = userDataSource.getUserByEmail(request.email)
 
         //algun field esta no esta completado o la contraseña es demasiado corta
         if (areFieldsBlank || isPwShort) {
             call.respond(HttpStatusCode.Conflict)
+            return@post
+        }
+
+        //username bad credentials
+        if (usernameBadCredentials) {
+            call.respond(HttpStatusCode.Conflict, "Username contains invalid characters")
             return@post
         }
 
@@ -97,9 +106,21 @@ fun Route.signIn(
             return@post
         }
 
-        val user = userDataSource.getUserByEmail(request.email)
+        val user = if (request.identifier.contains('@')) {
+            // Si identifier contiene '@', asumimos que es un correo electrónico
+            userDataSource.getUserByEmail(request.identifier)
+        } else {
+            // Sino, asumimos que es un nombre de usuario
+            userDataSource.getUser(request.identifier)
+        }
+
         if (user == null) {
-            call.respond(HttpStatusCode.Conflict, "Incorrect email")
+            val errorMessage = if (request.identifier.contains('@')) {
+                "Incorrect email"
+            } else {
+                "Incorrect username"
+            }
+            call.respond(HttpStatusCode.Conflict, errorMessage)
             return@post
         }
 
@@ -125,7 +146,7 @@ fun Route.signIn(
 
         call.respond(
             status = HttpStatusCode.OK,
-            message = "SignIn user"
+            message = "SignIn \n $user"
         )
 
     }
