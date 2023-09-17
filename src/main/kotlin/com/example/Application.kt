@@ -30,6 +30,7 @@ fun Application.module() {
     )
     val hashingService = SHA256HashingService()
 
+
     configureSecurity(tokenConfig)
     configureMonitoring()
     configureSerialization()
