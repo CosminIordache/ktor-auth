@@ -17,7 +17,7 @@ class SHA256HashingService: HashingService {
         )
     }
 
-    //Verifica si una contraseña ingresada coincide con la contraseña almacenada en forma de un hash salteado.
+    //Verifica si una contraseña ingresada coincide con la contraseña salt almacenada.
     override fun verify(value: String, saltedHash: SaltedHash): Boolean {
         return DigestUtils.sha256Hex(saltedHash.salt + value) == saltedHash.hash
     }
