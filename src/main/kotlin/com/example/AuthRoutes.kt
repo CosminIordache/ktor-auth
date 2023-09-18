@@ -45,7 +45,7 @@ fun Route.signUp(
         //Credentials
         val areFieldsBlank = request.username.isBlank() || request.email.isBlank() || request.password.isBlank()
         val isPwShort = request.password.length < 6
-        val invalidCharactersRegex = """[@!%#()=+\-\\/.,"]""".toRegex()
+        val invalidCharactersRegex = """[@.,"]""".toRegex()
         val usernameBadCredentials = invalidCharactersRegex.containsMatchIn(request.username)
         val existingUserByUsername = userDataSource.getUser(request.username)
         val existingUserByEmail = userDataSource.getUserByEmail(request.email)
